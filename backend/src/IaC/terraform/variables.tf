@@ -47,3 +47,56 @@ variable "seed_only_if_empty" {
   type        = bool
   default     = false
 }
+
+# -----------------------------
+# MySQL RDS (optional)
+# -----------------------------
+
+variable "enable_rds" {
+  description = "Enable provisioning of MySQL RDS instance"
+  type        = bool
+  default     = false
+}
+
+variable "mysql_db_name" {
+  description = "Initial database name for MySQL"
+  type        = string
+  default     = "recipeapp"
+}
+
+variable "mysql_username" {
+  description = "Master username for MySQL"
+  type        = string
+  default     = "appuser"
+}
+
+variable "mysql_password" {
+  description = "Master password for MySQL (min 8 chars)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "mysql_allowed_cidrs" {
+  description = "CIDR blocks allowed to access MySQL (use restrictive ranges in production)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "mysql_publicly_accessible" {
+  description = "Whether the RDS instance is publicly accessible (true for easy dev; false for private)"
+  type        = bool
+  default     = true
+}
+
+variable "mysql_allocated_storage" {
+  description = "Allocated storage in GB (20 to stay in free tier)"
+  type        = number
+  default     = 20
+}
+
+variable "mysql_backup_retention_days" {
+  description = "Backup retention in days (free tier includes backups up to allocated storage)"
+  type        = number
+  default     = 7
+}

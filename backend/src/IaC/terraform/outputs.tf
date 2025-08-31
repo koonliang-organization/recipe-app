@@ -27,3 +27,21 @@ output "api_gateway_stage_name" {
   description = "API Gateway Stage Name"
   value       = aws_api_gateway_stage.recipe_api_stage.stage_name
 }
+
+# -----------------------------
+# MySQL RDS Outputs (conditional)
+# -----------------------------
+
+output "mysql_endpoint" {
+  description = "RDS MySQL endpoint (hostname:port)"
+  value       = try("${aws_db_instance.mysql[0].address}:${aws_db_instance.mysql[0].port}", null)
+}
+
+output "mysql_connection_string" {
+  description = "Convenience connection string for MySQL (use secrets management in practice)"
+  value       = try(
+    "Server=${aws_db_instance.mysql[0].address};Port=${aws_db_instance.mysql[0].port};Database=${var.mysql_db_name};User ID=${var.mysql_username};Password=${var.mysql_password};SslMode=Preferred",
+    null
+  )
+  sensitive   = true
+}
