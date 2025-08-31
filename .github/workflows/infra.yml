@@ -1,0 +1,136 @@
+name: Infra (Terraform + Lambdas)
+
+on:
+  pull_request:
+    paths:
+      - 'backend/src/IaC/terraform/**'
+      - 'backend/src/Lambdas/**'
+      - '.github/workflows/infra.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment name (dev/staging/prod)
+        required: true
+        default: dev
+      aws_region:
+        description: AWS region
+        required: true
+        default: ap-southeast-1
+
+permissions:
+  id-token: write   # for GitHub OIDC → AWS
+  contents: read
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # Map secrets to TF_VAR_ so Terraform picks them up as -var values
+  TF_VAR_jwt_secret_key: ${{ secrets.JWT_SECRET_KEY }}
+  TF_VAR_jwt_issuer: ${{ secrets.JWT_ISSUER }}
+  TF_VAR_jwt_audience: ${{ secrets.JWT_AUDIENCE }}
+  TF_VAR_database_connection_string: ${{ secrets.DATABASE_CONNECTION_STRING }}
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Build Lambda packages
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          chmod +x ./build-lambdas.sh
+          ./build-lambdas.sh
+
+      - name: Terraform Init
+        shell: bash
+        run: terraform -chdir=backend/src/IaC/terraform init -input=false
+
+      - name: Terraform Validate
+        shell: bash
+        run: terraform -chdir=backend/src/IaC/terraform validate
+
+      - name: Terraform Plan
+        shell: bash
+        env:
+          TF_VAR_environment: dev
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+        run: terraform -chdir=backend/src/IaC/terraform plan -input=false -no-color -out=tfplan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: backend/src/IaC/terraform/tfplan
+
+  apply:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ github.event.inputs.aws_region }}
+
+      - name: Build Lambda packages
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          chmod +x ./build-lambdas.sh
+          ./build-lambdas.sh
+
+      - name: Terraform Init
+        shell: bash
+        run: terraform -chdir=backend/src/IaC/terraform init -input=false
+
+      - name: Terraform Apply
+        shell: bash
+        env:
+          TF_VAR_environment: ${{ github.event.inputs.environment }}
+          TF_VAR_aws_region: ${{ github.event.inputs.aws_region }}
+        run: terraform -chdir=backend/src/IaC/terraform apply -input=false -auto-approve
+
+      - name: Show Outputs
+        shell: bash
+        run: |
+          terraform -chdir=backend/src/IaC/terraform output -raw api_gateway_url || true
+          terraform -chdir=backend/src/IaC/terraform output -raw user_lambda_arn || true
+          terraform -chdir=backend/src/IaC/terraform output -raw recipe_lambda_arn || true
+          terraform -chdir=backend/src/IaC/terraform output -raw authorizer_lambda_arn || true
+
