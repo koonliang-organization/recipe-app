@@ -45,3 +45,9 @@ output "mysql_connection_string" {
   )
   sensitive   = true
 }
+
+output "effective_database_connection_string" {
+  description = "Connection string used by Lambdas (var or RDS)"
+  value       = local.effective_database_connection_string
+  sensitive   = true
+}
