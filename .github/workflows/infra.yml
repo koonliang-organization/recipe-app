@@ -87,7 +87,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-          aws-region: ${AWS_REGION}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Write backend config (remote state)
         shell: bash
