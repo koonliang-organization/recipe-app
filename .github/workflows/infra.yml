@@ -108,18 +108,6 @@ jobs:
           chmod +x ./build-lambdas.sh
           ./build-lambdas.sh
 
-      - name: Write backend config (remote state)
-        shell: bash
-        working-directory: backend/src/IaC/terraform
-        run: |
-          cat > backend.hcl <<EOF
-          bucket = "${TF_BACKEND_BUCKET}"
-          key    = "recipe-app/${{ github.event.inputs.environment }}/tfstate/terraform.tfstate"
-          region = "${{ github.event.inputs.aws_region }}"
-          dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
-          encrypt = true
-          EOF
-
       - name: Terraform Init
         shell: bash
         run: terraform -chdir=backend/src/IaC/terraform init -input=false -reconfigure -backend-config=backend.hcl
