@@ -16,6 +16,34 @@ on:
         description: AWS region
         required: true
         default: ap-southeast-1
+      enable_rds:
+        description: Enable RDS MySQL (requires MYSQL_PASSWORD secret)
+        required: false
+        default: 'true'
+      enable_seed_data:
+        description: Enable database seeding in Lambdas
+        required: false
+        default: 'true'
+      seed_only_if_empty:
+        description: Seed only when DB is empty
+        required: false
+        default: 'false'
+      mysql_username:
+        description: MySQL username
+        required: false
+        default: appuser
+      mysql_db_name:
+        description: MySQL database name
+        required: false
+        default: recipeapp
+      destroy:
+        description: Run terraform destroy instead of apply
+        required: false
+        default: 'false'
+      destroy_confirm:
+        description: Type 'DESTROY' to confirm
+        required: false
+        default: ''
 
 permissions:
   id-token: write   # for GitHub OIDC → AWS
@@ -31,6 +59,8 @@ env:
   TF_VAR_jwt_issuer: ${{ secrets.JWT_ISSUER }}
   TF_VAR_jwt_audience: ${{ secrets.JWT_AUDIENCE }}
   TF_VAR_database_connection_string: ${{ secrets.DATABASE_CONNECTION_STRING }}
+  # Optional RDS MySQL password (used when enable_rds=true)
+  TF_VAR_mysql_password: ${{ secrets.MYSQL_PASSWORD }}
 
 jobs:
   plan:
@@ -76,6 +106,10 @@ jobs:
         env:
           TF_VAR_environment: dev
           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_enable_seed_data: 'true'
+          TF_VAR_seed_only_if_empty: 'false'
+          # Avoid using secrets on PRs; leave RDS disabled for plan
+          TF_VAR_enable_rds: 'false'
         run: terraform -chdir=backend/src/IaC/terraform plan -input=false -no-color -out=tfplan
 
       - name: Upload Plan
@@ -124,7 +158,47 @@ jobs:
         env:
           TF_VAR_environment: ${{ github.event.inputs.environment }}
           TF_VAR_aws_region: ${{ github.event.inputs.aws_region }}
+          TF_VAR_enable_seed_data: ${{ github.event.inputs.enable_seed_data }}
+          TF_VAR_seed_only_if_empty: ${{ github.event.inputs.seed_only_if_empty }}
+          TF_VAR_enable_rds: ${{ github.event.inputs.enable_rds }}
+          TF_VAR_mysql_username: ${{ github.event.inputs.mysql_username }}
+          TF_VAR_mysql_db_name: ${{ github.event.inputs.mysql_db_name }}
         run: terraform -chdir=backend/src/IaC/terraform apply -input=false -auto-approve
+
+  destroy:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.destroy == 'true' && github.event.inputs.destroy_confirm == 'DESTROY'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ github.event.inputs.aws_region }}
+
+      - name: Terraform Init
+        shell: bash
+        run: terraform -chdir=backend/src/IaC/terraform init -input=false
+
+      - name: Terraform Destroy
+        shell: bash
+        env:
+          TF_VAR_environment: ${{ github.event.inputs.environment }}
+          TF_VAR_aws_region: ${{ github.event.inputs.aws_region }}
+          TF_VAR_enable_seed_data: ${{ github.event.inputs.enable_seed_data }}
+          TF_VAR_seed_only_if_empty: ${{ github.event.inputs.seed_only_if_empty }}
+          TF_VAR_enable_rds: ${{ github.event.inputs.enable_rds }}
+          TF_VAR_mysql_username: ${{ github.event.inputs.mysql_username }}
+          TF_VAR_mysql_db_name: ${{ github.event.inputs.mysql_db_name }}
+        run: terraform -chdir=backend/src/IaC/terraform destroy -input=false -auto-approve
 
       - name: Show Outputs
         shell: bash
