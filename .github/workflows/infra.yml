@@ -96,7 +96,7 @@ jobs:
           cat > backend.hcl <<EOF
           bucket = "${TF_BACKEND_BUCKET}"
           key    = "recipe-app/plan/${{ github.run_id }}.tfstate"
-          region = "${{ secrets.AWS_REGION }}"
+          region = "${{ AWS_REGION }}"
           dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
           encrypt = true
           EOF
@@ -171,7 +171,7 @@ jobs:
           cat > backend.hcl <<EOF
           bucket = "${TF_BACKEND_BUCKET}"
           key    = "recipe-app/${{ github.event.inputs.environment }}/tfstate/terraform.tfstate"
-          region = "${{ github.event.inputs.aws_region }}"
+          region = "${{ AWS_REGION  }}"
           dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
           encrypt = true
           EOF
@@ -226,7 +226,7 @@ jobs:
           cat > backend.hcl <<EOF
           bucket = "${TF_BACKEND_BUCKET}"
           key    = "recipe-app/${{ github.event.inputs.environment }}/tfstate/terraform.tfstate"
-          region = "${{ github.event.inputs.aws_region }}"
+          region = "${{ AWS_REGION  }}"
           dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
           encrypt = true
           EOF
