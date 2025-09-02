@@ -7,8 +7,14 @@ terraform {
     }
   }
 
-  # Use S3 backend configured via -backend-config in CI or local runs
-  backend "s3" {}
+  # S3 backend. Values are placeholders and are overridden via -backend-config.
+  backend "s3" {
+    bucket = "placeholder"
+    key    = "placeholder"
+    region = "ap-southeast-1"
+    encrypt = true
+    # dynamodb_table intentionally omitted; provided via backend.hcl
+  }
 }
 
 provider "aws" {
