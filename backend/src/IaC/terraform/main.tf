@@ -7,12 +7,8 @@ terraform {
     }
   }
 
-  # Uncomment for remote state storage in production
-  # backend "s3" {
-  #   bucket = "your-terraform-state-bucket"
-  #   key    = "recipe-app/terraform.tfstate"
-  #   region = "ap-southeast-1"
-  # }
+  # Use S3 backend configured via -backend-config in CI or local runs
+  backend "s3" {}
 }
 
 provider "aws" {
