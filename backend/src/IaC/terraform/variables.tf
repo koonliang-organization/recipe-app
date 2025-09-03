@@ -86,7 +86,7 @@ variable "mysql_allowed_cidrs" {
 variable "mysql_publicly_accessible" {
   description = "Whether the RDS instance is publicly accessible (true for easy dev; false for private)"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "mysql_allocated_storage" {
