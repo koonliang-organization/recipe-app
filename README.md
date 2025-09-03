@@ -34,7 +34,7 @@ The project follows **Clean Architecture** principles with clear separation betw
 - **React Context** - State management for authentication
 
 ### **Backend (Serverless API)**
-- **.NET 9** with **ASP.NET Core** - Modern web API framework
+- **.NET 8** with **ASP.NET Core** - Modern web API framework
 - **AWS Lambda** - Serverless compute (User, Recipe, Authorizer functions)
 - **Entity Framework Core** - ORM with MySQL provider
 - **MediatR** - CQRS pattern implementation
@@ -50,15 +50,15 @@ The project follows **Clean Architecture** principles with clear separation betw
 
 ### **Infrastructure & Deployment**
 - **AWS API Gateway** - Production API routing and management
-- **AWS SAM** - Infrastructure as Code templates
-- **MySQL Database** - Relational data storage with host connectivity support
+- **Terraform (IaC)** - Backend at `backend/src/IaC/terraform` for API, Lambdas, optional RDS
+- **MySQL Database** - Relational data storage with host connectivity support (RDS optional)
 - **Docker & Docker Compose** - Full containerization with multi-service orchestration
 - **Host MySQL Integration** - Seamless connection from containers to host database instances
 
 ## 📁 Project Structure
 
 ```
-claude-recipe-app/
+recipe-app/
 ├── frontend/                 # React Native Mobile App
 │   ├── src/
 │   │   ├── screens/          # App screens (Login, Home, Recipe, etc.)
@@ -83,8 +83,7 @@ claude-recipe-app/
 │   │   │   ├── Recipe/       # Recipe Management Lambda (port 5000)
 │   │   │   └── Authorizer/   # JWT Authorization Lambda (port 5002)
 │   │   └── IaC/
-│   │       ├── sam/          # AWS SAM templates
-│   │       └── terraform/    # Terraform configurations
+│   │       └── terraform/    # Terraform configurations (API Gateway, Lambdas, optional RDS)
 │   └── tests/                # Unit and integration tests
 │
 ├── backend-web/              # Local Development Gateway
@@ -116,7 +115,7 @@ GRANT ALL PRIVILEGES ON RecipeApp_Dev.* TO 'admin'@'%';
 
 # 2. Clone and start backend services and gateway
 git clone <repository-url>
-cd claude-recipe-app
+cd recipe-app
 docker-compose up -d
 # Services will be available at:
 # - Gateway Service: http://localhost:3000
@@ -151,7 +150,7 @@ docker stats
 
 **Prerequisites:**
 - **Node.js** 18+ and npm
-- **.NET 9 SDK**
+- **.NET 8 SDK**
 - **Expo CLI**: `npm install -g @expo/cli`
 - **MySQL** (local or cloud instance)
 
@@ -159,7 +158,7 @@ docker stats
 
 ```bash
 git clone <repository-url>
-cd claude-recipe-app
+cd recipe-app
 ```
 
 #### 2. Backend Setup
@@ -337,18 +336,42 @@ npm run lint
 
 ## 🌐 Deployment
 
-### AWS Deployment
+### Cloud Deployment (Terraform)
 
+Prerequisites:
+- Terraform, AWS CLI configured with credentials
+- .NET SDK (for building Lambda packages)
+
+Steps:
 ```bash
-# Deploy backend infrastructure
-cd backend/src/IaC/sam
-sam deploy --parameter-overrides Environment=prod
+# 1) Configure environment
+cd backend/src/IaC/terraform
+cp .env.example .env
+# Edit .env and set at least:
+#   JWT_SECRET_KEY=your-secure-secret
+# Optionally set DATABASE_CONNECTION_STRING or enable RDS via TF_VAR_enable_rds=true
 
-# Build and deploy mobile app
+# 2) Deploy (macOS/Linux)
+./deploy.sh         # interactive
+# or
+./deploy.sh --yes   # non-interactive
+
+# 2b) Deploy (Windows)
+deploy.cmd          # interactive
+deploy.cmd --yes    # non-interactive
+
+# 3) After deploy, get API URL (also shown by the script)
+terraform output -raw api_gateway_url
+
+# 4) Point the mobile app to the API
+cd ../../../..
 cd frontend
-expo build:ios
-expo build:android
+echo "EXPO_PUBLIC_ANONYMOUS_MODE=false" > .env
+echo "EXPO_PUBLIC_API_BASE_URL=<paste-api-url-here>" >> .env
 ```
+
+Tear down:
+- In `backend/src/IaC/terraform`, ensure the same variables are exported (e.g., keep `.env`), then run `terraform destroy`.
 
 ### Environment Configuration
 

@@ -6,15 +6,14 @@ terraform {
       version = "~> 5.0"
     }
   }
-
-  # S3 backend. Values are placeholders and are overridden via -backend-config.
-  backend "s3" {
-    bucket = "placeholder"
-    key    = "placeholder"
-    region = "ap-southeast-1"
-    encrypt = true
-    # dynamodb_table intentionally omitted; provided via backend.hcl
-  }
+  # Backend is intentionally not pinned here.
+  # Default is local state. For remote S3 state, create a file
+  # named `backend.remote.tf` with the following content and run
+  # `terraform init -backend-config=backend.hcl -reconfigure`:
+  #
+  # terraform {
+  #   backend "s3" {}
+  # }
 }
 
 provider "aws" {

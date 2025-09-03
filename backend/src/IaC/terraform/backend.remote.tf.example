@@ -1,0 +1,16 @@
+// Remote backend definition for S3 (partial config).
+// Copy to `backend.remote.tf` to enable remote state, and provide
+// the concrete values via `terraform init -backend-config=backend.hcl`
+// or hard-code them here if you prefer.
+
+terraform {
+  backend "s3" {}
+}
+
+// Example backend.hcl (kept outside VCS):
+// bucket         = "<your-bucket>"
+// key            = "recipe-app/<env>/tfstate/terraform.tfstate"
+// region         = "ap-southeast-1"
+// dynamodb_table = "<your-ddb-table>"
+// encrypt        = true
+

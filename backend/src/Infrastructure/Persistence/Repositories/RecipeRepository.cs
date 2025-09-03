@@ -83,6 +83,9 @@ public class RecipeRepository : IRecipeRepository
                 _logger.LogDebug("Applied search filter: {Search}", search);
             }
 
+            // filter by user
+            query = query.Where(r => r.UserId == userId);
+
             // Get total count
             var total = await query.CountAsync(cancellationToken);
             _logger.LogInformation("Total recipes found after filters: {Total}", total);

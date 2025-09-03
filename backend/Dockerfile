@@ -1,4 +1,4 @@
-# Multi-stage build for .NET 9 backend services
+# Multi-stage build for .NET 8 backend services
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 5000

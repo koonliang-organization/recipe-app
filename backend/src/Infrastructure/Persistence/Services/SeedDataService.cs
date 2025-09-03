@@ -84,7 +84,7 @@ public class SeedDataService : ISeedDataService
             return existingUser;
         }
 
-        var passwordHash = _passwordService.HashPassword("DemoPassword123!");
+        var passwordHash = _passwordService.HashPassword("pass1234");
         var emailResult = Email.Create("demo@example.com");
         if (emailResult.IsFailure)
         {

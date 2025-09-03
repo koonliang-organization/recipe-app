@@ -142,7 +142,22 @@ rem Terraform steps
 rem -----------------------------
 :terraform_init
 call :print_header "Initializing Terraform..."
-terraform init
+
+rem If backend.hcl exists, ensure a backend.remote.tf with S3 backend is present and use it
+if exist backend.hcl (
+    if not exist backend.remote.tf (
+        call :print_status "Creating temporary backend.remote.tf for S3 backend"
+        > backend.remote.tf echo terraform {
+        >> backend.remote.tf echo   backend "s3" {}
+        >> backend.remote.tf echo }
+    )
+    terraform init -reconfigure -backend-config=backend.hcl
+    if errorlevel 1 exit /b 1
+    goto :eof
+)
+
+rem Default to local backend
+terraform init -reconfigure
 if errorlevel 1 exit /b 1
 goto :eof
 

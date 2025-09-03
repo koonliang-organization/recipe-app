@@ -101,6 +101,16 @@ jobs:
           encrypt = true
           EOF
 
+      - name: Ensure remote backend block exists
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          cat > backend.remote.tf <<'EOF'
+          terraform {
+            backend "s3" {}
+          }
+          EOF
+
       - name: Build Lambda packages
         shell: bash
         working-directory: backend/src/IaC/terraform
@@ -176,6 +186,16 @@ jobs:
           encrypt = true
           EOF
 
+      - name: Ensure remote backend block exists
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          cat > backend.remote.tf <<'EOF'
+          terraform {
+            backend "s3" {}
+          }
+          EOF
+
       - name: Terraform Init
         shell: bash
         run: terraform -chdir=backend/src/IaC/terraform init -input=false -reconfigure -backend-config=backend.hcl
@@ -229,6 +249,16 @@ jobs:
           region = "${AWS_REGION}"
           dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
           encrypt = true
+          EOF
+
+      - name: Ensure remote backend block exists
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          cat > backend.remote.tf <<'EOF'
+          terraform {
+            backend "s3" {}
+          }
           EOF
 
       - name: Terraform Init

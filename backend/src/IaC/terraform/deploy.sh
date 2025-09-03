@@ -81,7 +81,22 @@ build_lambdas() {
 # Initialize Terraform
 init_terraform() {
     print_header "🚀 Initializing Terraform..."
-    terraform init
+
+    if [[ -f backend.hcl ]]; then
+        # Ensure an S3 backend block exists when using backend.hcl
+        if [[ ! -f backend.remote.tf ]]; then
+            print_status "Creating temporary backend.remote.tf for S3 backend"
+            cat > backend.remote.tf <<'EOF'
+terraform {
+  backend "s3" {}
+}
+EOF
+        fi
+        terraform init -reconfigure -backend-config=backend.hcl
+    else
+        # Default to local backend
+        terraform init -reconfigure
+    fi
 }
 
 # Plan Terraform deployment
