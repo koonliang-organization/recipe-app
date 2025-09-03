@@ -1,0 +1,76 @@
+name: Backend Tests
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore backend/RecipeAppApi.sln
+
+      - name: Run tests with coverage
+        run: |
+          dotnet test backend/RecipeAppApi.sln \
+            --collect:"XPlat Code Coverage" \
+            --results-directory backend/TestResults \
+            --verbosity minimal
+
+      - name: Install ReportGenerator
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Generate full coverage report (Domain + Application + Infrastructure + Lambdas)
+        run: |
+          reportgenerator \
+            -reports:"backend/TestResults/**/coverage.cobertura.xml" \
+            -targetdir:"backend/TestResults/CoverageReportAll" \
+            -reporttypes:"Html;TextSummary" \
+            -classfilters:"+*;-*.Migrations.*;-Program" \
+            -assemblyfilters:"+Core.Domain;+Core.Application;+Infrastructure.Persistence;+Recipe;+User" \
+            -historydir:"backend/TestResults/CoverageReportAll/History"
+
+      - name: Enforce 70% minimum line coverage (Domain + App + Infra + Lambdas)
+        run: |
+          SUMMARY="backend/TestResults/CoverageReportAll/Summary.txt"
+          if [ ! -f "$SUMMARY" ]; then
+            echo "Coverage summary not found at $SUMMARY"
+            exit 1
+          fi
+          LINE=$(grep -m1 -oE 'Line coverage: [0-9]+(\.[0-9]+)?%' "$SUMMARY" || true)
+          if [ -z "$LINE" ]; then
+            echo "Could not parse line coverage from summary"
+            echo "--- Summary ---"
+            cat "$SUMMARY" || true
+            exit 1
+          fi
+          COV=$(echo "$LINE" | grep -oE '[0-9]+(\.[0-9]+)?')
+          echo "Total line coverage: ${COV}%"
+          COV_INT=${COV%.*}
+          THRESHOLD=70
+          if [ -z "$COV_INT" ]; then COV_INT=0; fi
+          if [ "$COV_INT" -lt "$THRESHOLD" ]; then
+            echo "Coverage ${COV}% is below threshold ${THRESHOLD}%"
+            exit 1
+          fi
+          echo "Coverage threshold met (>= ${THRESHOLD}%)."
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report-all
+          path: backend/TestResults/CoverageReportAll

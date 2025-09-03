@@ -1,56 +1,45 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.Common", "src\BuildingBlocks\Common\BuildingBlocks.Common.csproj", "{A1B2C3D4-E5F6-7890-ABCD-123456789012}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.Observability", "src\BuildingBlocks\Observability\BuildingBlocks.Observability.csproj", "{B2C3D4E5-F6G7-8901-BCDE-234567890123}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Domain", "src\Core\Domain\Core.Domain.csproj", "{C3D4E5F6-G7H8-9012-CDEF-345678901234}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Application", "src\Core\Application\Core.Application.csproj", "{D4E5F6G7-H8I9-0123-DEFG-456789012345}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Persistence", "src\Infrastructure\Persistence\Infrastructure.Persistence.csproj", "{E5F6G7H8-I9J0-1234-EFGH-567890123456}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Messaging", "src\Infrastructure\Messaging\Infrastructure.Messaging.csproj", "{F6G7H8I9-J0K1-2345-FGHI-678901234567}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recipe", "src\Lambdas\Recipe\Recipe.csproj", "{G7H8I9J0-K1L2-3456-GHIJ-789012345678}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User", "src\Lambdas\User\User.csproj", "{H8I9J0K1-L2M3-4567-HIJK-890123456789}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authorizer", "src\Lambdas\Authorizer\Authorizer.csproj", "{I9J0K1L2-M3N4-5678-IJKL-901234567890}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.Common.Tests", "tests\BuildingBlocks.Common.Tests\BuildingBlocks.Common.Tests.csproj", "{J0K1L2M3-N4O5-6789-JKLM-012345678901}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Domain.Tests", "tests\Core.Domain.Tests\Core.Domain.Tests.csproj", "{K1L2M3N4-O5P6-7890-KLMN-123456789012}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{L2M3N4O5-P6Q7-8901-LMNO-234567890123}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{M3N4O5P6-Q7R8-9012-MNOP-345678901234}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{N4O5P6Q7-R8S9-0123-NOPQ-456789012345}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lambdas", "Lambdas", "{O5P6Q7R8-S9T0-1234-OPQR-567890123456}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{P6Q7R8S9-T0U1-2345-PQRS-678901234567}"
 EndProject
-
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Application.Tests", "tests\Core.Application.Tests\Core.Application.Tests.csproj", "{88F006D7-A1F9-4A20-A0F6-99FE116988B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Persistence.Tests", "tests\Infrastructure.Persistence.Tests\Infrastructure.Persistence.Tests.csproj", "{CCB9710D-E963-4925-8E92-ACA40E34CEE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambdas.Tests", "tests\Lambdas.Tests\Lambdas.Tests.csproj", "{F805D71B-57E0-4EA5-AF00-1004C59938A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +90,18 @@ Global
 		{K1L2M3N4-O5P6-7890-KLMN-123456789012}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{K1L2M3N4-O5P6-7890-KLMN-123456789012}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{K1L2M3N4-O5P6-7890-KLMN-123456789012}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88F006D7-A1F9-4A20-A0F6-99FE116988B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88F006D7-A1F9-4A20-A0F6-99FE116988B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88F006D7-A1F9-4A20-A0F6-99FE116988B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88F006D7-A1F9-4A20-A0F6-99FE116988B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -117,5 +118,8 @@ Global
 		{I9J0K1L2-M3N4-5678-IJKL-901234567890} = {O5P6Q7R8-S9T0-1234-OPQR-567890123456}
 		{J0K1L2M3-N4O5-6789-JKLM-012345678901} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
 		{K1L2M3N4-O5P6-7890-KLMN-123456789012} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
+		{88F006D7-A1F9-4A20-A0F6-99FE116988B1} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
 	EndGlobalSection
 EndGlobal
