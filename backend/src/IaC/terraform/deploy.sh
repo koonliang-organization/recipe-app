@@ -100,7 +100,13 @@ plan_deployment() {
 # Apply Terraform deployment
 apply_deployment() {
     print_header "🚀 Applying Terraform deployment..."
-    terraform apply -auto-approve
+    terraform apply -auto-approve \
+        -var="jwt_secret_key=${JWT_SECRET_KEY}" \
+        -var="jwt_issuer=${JWT_ISSUER:-recipe-app}" \
+        -var="jwt_audience=${JWT_AUDIENCE:-recipe-app-users}" \
+        -var="database_connection_string=${DATABASE_CONNECTION_STRING}" \
+        -var="environment=${ENVIRONMENT:-dev}" \
+        -var="aws_region=${AWS_REGION:-ap-southeast-1}"
 }
 
 # Show deployment results

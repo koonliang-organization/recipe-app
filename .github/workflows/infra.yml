@@ -16,6 +16,34 @@ on:
         description: AWS region
         required: true
         default: ap-southeast-1
+      enable_rds:
+        description: Enable RDS MySQL (requires MYSQL_PASSWORD secret)
+        required: false
+        default: 'true'
+      enable_seed_data:
+        description: Enable database seeding in Lambdas
+        required: false
+        default: 'true'
+      seed_only_if_empty:
+        description: Seed only when DB is empty
+        required: false
+        default: 'false'
+      mysql_username:
+        description: MySQL username
+        required: false
+        default: appuser
+      mysql_db_name:
+        description: MySQL database name
+        required: false
+        default: recipeapp
+      destroy:
+        description: Run terraform destroy instead of apply
+        required: false
+        default: 'false'
+      destroy_confirm:
+        description: Type 'DESTROY' to confirm
+        required: false
+        default: ''
 
 permissions:
   id-token: write   # for GitHub OIDC → AWS
@@ -31,6 +59,11 @@ env:
   TF_VAR_jwt_issuer: ${{ secrets.JWT_ISSUER }}
   TF_VAR_jwt_audience: ${{ secrets.JWT_AUDIENCE }}
   TF_VAR_database_connection_string: ${{ secrets.DATABASE_CONNECTION_STRING }}
+  # Optional RDS MySQL password (used when enable_rds=true)
+  TF_VAR_mysql_password: ${{ secrets.MYSQL_PASSWORD }}
+  # Terraform backend (remote state)
+  TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
+  TF_BACKEND_DYNAMODB_TABLE: ${{ secrets.TF_BACKEND_DYNAMODB_TABLE }}
 
 jobs:
   plan:
@@ -56,6 +89,18 @@ jobs:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Write backend config (remote state)
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          cat > backend.hcl <<EOF
+          bucket = "${TF_BACKEND_BUCKET}"
+          key    = "recipe-app/plan/${{ github.run_id }}.tfstate"
+          region = "${AWS_REGION}"
+          dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
+          encrypt = true
+          EOF
+
       - name: Build Lambda packages
         shell: bash
         working-directory: backend/src/IaC/terraform
@@ -65,7 +110,7 @@ jobs:
 
       - name: Terraform Init
         shell: bash
-        run: terraform -chdir=backend/src/IaC/terraform init -input=false
+        run: terraform -chdir=backend/src/IaC/terraform init -input=false -reconfigure -backend-config=backend.hcl
 
       - name: Terraform Validate
         shell: bash
@@ -76,6 +121,10 @@ jobs:
         env:
           TF_VAR_environment: dev
           TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_enable_seed_data: 'true'
+          TF_VAR_seed_only_if_empty: 'false'
+          # Avoid using secrets on PRs; leave RDS disabled for plan
+          TF_VAR_enable_rds: 'false'
         run: terraform -chdir=backend/src/IaC/terraform plan -input=false -no-color -out=tfplan
 
       - name: Upload Plan
@@ -85,7 +134,7 @@ jobs:
           path: backend/src/IaC/terraform/tfplan
 
   apply:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.destroy == '' || github.event.inputs.destroy == null || github.event.inputs.destroy == 'false')
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -115,15 +164,32 @@ jobs:
           chmod +x ./build-lambdas.sh
           ./build-lambdas.sh
 
+      - name: Write backend config (remote state)
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          cat > backend.hcl <<EOF
+          bucket = "${TF_BACKEND_BUCKET}"
+          key    = "recipe-app/${{ github.event.inputs.environment }}/tfstate/terraform.tfstate"
+          region = "${AWS_REGION}"
+          dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
+          encrypt = true
+          EOF
+
       - name: Terraform Init
         shell: bash
-        run: terraform -chdir=backend/src/IaC/terraform init -input=false
+        run: terraform -chdir=backend/src/IaC/terraform init -input=false -reconfigure -backend-config=backend.hcl
 
       - name: Terraform Apply
         shell: bash
         env:
           TF_VAR_environment: ${{ github.event.inputs.environment }}
           TF_VAR_aws_region: ${{ github.event.inputs.aws_region }}
+          TF_VAR_enable_seed_data: ${{ github.event.inputs.enable_seed_data }}
+          TF_VAR_seed_only_if_empty: ${{ github.event.inputs.seed_only_if_empty }}
+          TF_VAR_enable_rds: ${{ github.event.inputs.enable_rds }}
+          TF_VAR_mysql_username: ${{ github.event.inputs.mysql_username }}
+          TF_VAR_mysql_db_name: ${{ github.event.inputs.mysql_db_name }}
         run: terraform -chdir=backend/src/IaC/terraform apply -input=false -auto-approve
 
       - name: Show Outputs
@@ -133,4 +199,51 @@ jobs:
           terraform -chdir=backend/src/IaC/terraform output -raw user_lambda_arn || true
           terraform -chdir=backend/src/IaC/terraform output -raw recipe_lambda_arn || true
           terraform -chdir=backend/src/IaC/terraform output -raw authorizer_lambda_arn || true
+
+  destroy:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.destroy == 'true' && github.event.inputs.destroy_confirm == 'DESTROY'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ github.event.inputs.aws_region }}
+
+      - name: Write backend config (remote state)
+        shell: bash
+        working-directory: backend/src/IaC/terraform
+        run: |
+          cat > backend.hcl <<EOF
+          bucket = "${TF_BACKEND_BUCKET}"
+          key    = "recipe-app/${{ github.event.inputs.environment }}/tfstate/terraform.tfstate"
+          region = "${AWS_REGION}"
+          dynamodb_table = "${TF_BACKEND_DYNAMODB_TABLE}"
+          encrypt = true
+          EOF
+
+      - name: Terraform Init
+        shell: bash
+        run: terraform -chdir=backend/src/IaC/terraform init -input=false -reconfigure -backend-config=backend.hcl
+
+      - name: Terraform Destroy
+        shell: bash
+        env:
+          TF_VAR_environment: ${{ github.event.inputs.environment }}
+          TF_VAR_aws_region: ${{ github.event.inputs.aws_region }}
+          TF_VAR_enable_seed_data: ${{ github.event.inputs.enable_seed_data }}
+          TF_VAR_seed_only_if_empty: ${{ github.event.inputs.seed_only_if_empty }}
+          TF_VAR_enable_rds: ${{ github.event.inputs.enable_rds }}
+          TF_VAR_mysql_username: ${{ github.event.inputs.mysql_username }}
+          TF_VAR_mysql_db_name: ${{ github.event.inputs.mysql_db_name }}
+        run: terraform -chdir=backend/src/IaC/terraform destroy -input=false -auto-approve
 

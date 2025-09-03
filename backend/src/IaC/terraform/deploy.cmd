@@ -160,7 +160,13 @@ goto :eof
 
 :terraform_apply
 call :print_header "Applying Terraform deployment..."
-terraform apply -auto-approve
+terraform apply -auto-approve ^
+  -var="jwt_secret_key=%JWT_SECRET_KEY%" ^
+  -var="jwt_issuer=%JWT_ISSUER%" ^
+  -var="jwt_audience=%JWT_AUDIENCE%" ^
+  -var="database_connection_string=%DATABASE_CONNECTION_STRING%" ^
+  -var="environment=%ENVIRONMENT%" ^
+  -var="aws_region=%AWS_REGION%"
 if errorlevel 1 exit /b 1
 goto :eof
 

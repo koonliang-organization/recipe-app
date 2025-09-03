@@ -30,7 +30,7 @@ resource "aws_lambda_function" "user_lambda" {
       JWT_SECRET_KEY             = var.jwt_secret_key
       JWT_ISSUER                = var.jwt_issuer
       JWT_AUDIENCE              = var.jwt_audience
-      CONNECTION_STRING         = var.database_connection_string
+      CONNECTION_STRING         = local.effective_database_connection_string
       ENABLE_SEEDING  = var.enable_seed_data
       SEED_ONLY_IF_EMPTY = var.seed_only_if_empty
     }
@@ -55,7 +55,7 @@ resource "aws_lambda_function" "recipe_lambda" {
   environment {
     variables = {
       ASPNETCORE_ENVIRONMENT       = var.environment
-      CONNECTION_STRING           = var.database_connection_string
+      CONNECTION_STRING           = local.effective_database_connection_string
       ENABLE_SEEDING   = var.enable_seed_data
       SEED_ONLY_IF_EMPTY = var.seed_only_if_empty
     }

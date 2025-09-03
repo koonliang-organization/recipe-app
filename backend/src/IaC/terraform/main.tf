@@ -7,12 +7,14 @@ terraform {
     }
   }
 
-  # Uncomment for remote state storage in production
-  # backend "s3" {
-  #   bucket = "your-terraform-state-bucket"
-  #   key    = "recipe-app/terraform.tfstate"
-  #   region = "ap-southeast-1"
-  # }
+  # S3 backend. Values are placeholders and are overridden via -backend-config.
+  backend "s3" {
+    bucket = "placeholder"
+    key    = "placeholder"
+    region = "ap-southeast-1"
+    encrypt = true
+    # dynamodb_table intentionally omitted; provided via backend.hcl
+  }
 }
 
 provider "aws" {

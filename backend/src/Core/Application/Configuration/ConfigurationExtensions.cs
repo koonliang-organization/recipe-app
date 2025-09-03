@@ -35,6 +35,13 @@ public static class ConfigurationExtensions
             {
                 options.EnableSeeding = enableSeeding;
             }
+
+            // Allow overriding SeedOnlyIfEmpty via environment variable as well
+            var seedOnlyIfEmptyEnv = Environment.GetEnvironmentVariable("SEED_ONLY_IF_EMPTY");
+            if (!string.IsNullOrEmpty(seedOnlyIfEmptyEnv) && bool.TryParse(seedOnlyIfEmptyEnv, out var seedOnlyIfEmpty))
+            {
+                options.SeedOnlyIfEmpty = seedOnlyIfEmpty;
+            }
         });
 
         return services;
