@@ -48,7 +48,7 @@ dotnet test backend/tests/Core.Application.Tests/Core.Application.Tests.csproj \
 After running tests with `--collect:"XPlat Code Coverage"`:
 
 ```
-# Generate reports for Core.Domain and Core.Application only
+# Generate reports for Core.Domain and Core.Application only (for local insight)
 reportgenerator \
   -reports:"backend/TestResults/**/coverage.cobertura.xml" \
   -targetdir:"backend/TestResults/CoverageReport" \
@@ -64,6 +64,14 @@ cat backend/TestResults/CoverageReport/Summary.txt
 # Windows: start backend/TestResults/CoverageReport/index.html
 ```
 
+# Generate full report including Infrastructure and Lambdas (threshold enforced in CI)
+reportgenerator \
+  -reports:"backend/TestResults/**/coverage.cobertura.xml" \
+  -targetdir:"backend/TestResults/CoverageReportAll" \
+  -reporttypes:"Html;TextSummary" \
+  -assemblyfilters:"+Core.Domain;+Core.Application;+Infrastructure.Persistence;+Recipe;+User" \
+  -historydir:"backend/TestResults/CoverageReportAll/History"
+
 To include all assemblies in the report, remove `-assemblyfilters` or use `-assemblyfilters:"+*"`.
 
 ## Clean Previous Results
@@ -76,6 +84,12 @@ rm -rf backend/TestResults
 
 - Missing .NET 8 runtime: Install .NET 8 SDK and rerun `dotnet restore`/`dotnet test`.
 - `reportgenerator` not found: Ensure it’s installed and on PATH (see prerequisites). On Windows, the tool is in `%USERPROFILE%\.dotnet\tools`.
+
+## CI Coverage
+
+The GitHub Actions workflow generates two artifacts and enforces overall line coverage:
+- `backend-coverage-report` (Domain + Application) — informational.
+- `backend-coverage-report-all` (Domain + Application + Infrastructure + Lambdas) — pipeline enforces >= 70% line coverage on this report.
 
 ## Optional: Enforce Coverage Threshold in CI
 
@@ -97,4 +111,3 @@ dotnet test backend/RecipeAppApi.sln \
 ```
 
 (We currently use the DataCollector approach; the above is an alternative if you need thresholds.)
-

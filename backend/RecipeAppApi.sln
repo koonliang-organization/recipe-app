@@ -36,6 +36,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{P6Q7R8S9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Application.Tests", "tests\Core.Application.Tests\Core.Application.Tests.csproj", "{88F006D7-A1F9-4A20-A0F6-99FE116988B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Persistence.Tests", "tests\Infrastructure.Persistence.Tests\Infrastructure.Persistence.Tests.csproj", "{CCB9710D-E963-4925-8E92-ACA40E34CEE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambdas.Tests", "tests\Lambdas.Tests\Lambdas.Tests.csproj", "{F805D71B-57E0-4EA5-AF00-1004C59938A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +94,14 @@ Global
 		{88F006D7-A1F9-4A20-A0F6-99FE116988B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88F006D7-A1F9-4A20-A0F6-99FE116988B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88F006D7-A1F9-4A20-A0F6-99FE116988B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,5 +119,7 @@ Global
 		{J0K1L2M3-N4O5-6789-JKLM-012345678901} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
 		{K1L2M3N4-O5P6-7890-KLMN-123456789012} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
 		{88F006D7-A1F9-4A20-A0F6-99FE116988B1} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
+		{CCB9710D-E963-4925-8E92-ACA40E34CEE1} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
+		{F805D71B-57E0-4EA5-AF00-1004C59938A9} = {P6Q7R8S9-T0U1-2345-PQRS-678901234567}
 	EndGlobalSection
 EndGlobal

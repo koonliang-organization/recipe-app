@@ -34,18 +34,18 @@ jobs:
           dotnet tool install -g dotnet-reportgenerator-globaltool
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Generate coverage report (HTML + text)
+      - name: Generate full coverage report (Domain + Application + Infrastructure + Lambdas)
         run: |
           reportgenerator \
             -reports:"backend/TestResults/**/coverage.cobertura.xml" \
-            -targetdir:"backend/TestResults/CoverageReport" \
+            -targetdir:"backend/TestResults/CoverageReportAll" \
             -reporttypes:"Html;TextSummary" \
-            -assemblyfilters:"+Core.Domain;+Core.Application" \
-            -historydir:"backend/TestResults/CoverageReport/History"
+            -assemblyfilters:"+Core.Domain;+Core.Application;+Infrastructure.Persistence;+Recipe;+User" \
+            -historydir:"backend/TestResults/CoverageReportAll/History"
 
-      - name: Enforce 70% minimum line coverage
+      - name: Enforce 70% minimum line coverage (Domain + App + Infra + Lambdas)
         run: |
-          SUMMARY="backend/TestResults/CoverageReport/Summary.txt"
+          SUMMARY="backend/TestResults/CoverageReportAll/Summary.txt"
           if [ ! -f "$SUMMARY" ]; then
             echo "Coverage summary not found at $SUMMARY"
             exit 1
@@ -71,6 +71,5 @@ jobs:
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: backend-coverage-report
-          path: backend/TestResults/CoverageReport
-
+          name: backend-coverage-report-all
+          path: backend/TestResults/CoverageReportAll
