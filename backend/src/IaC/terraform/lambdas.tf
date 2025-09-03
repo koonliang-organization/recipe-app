@@ -23,6 +23,15 @@ resource "aws_lambda_function" "user_lambda" {
   runtime         = "dotnet8"
   memory_size     = 512
   timeout         = 30
+
+  # Attach to VPC only when RDS is enabled (to access private RDS)
+  dynamic "vpc_config" {
+    for_each = var.enable_rds ? [1] : []
+    content {
+      subnet_ids         = [aws_subnet.private_a[0].id, aws_subnet.private_b[0].id]
+      security_group_ids = [aws_security_group.lambda_sg[0].id]
+    }
+  }
   
   environment {
     variables = {
@@ -51,6 +60,15 @@ resource "aws_lambda_function" "recipe_lambda" {
   runtime         = "dotnet8"
   memory_size     = 512
   timeout         = 30
+
+  # Attach to VPC only when RDS is enabled (to access private RDS)
+  dynamic "vpc_config" {
+    for_each = var.enable_rds ? [1] : []
+    content {
+      subnet_ids         = [aws_subnet.private_a[0].id, aws_subnet.private_b[0].id]
+      security_group_ids = [aws_security_group.lambda_sg[0].id]
+    }
+  }
 
   environment {
     variables = {

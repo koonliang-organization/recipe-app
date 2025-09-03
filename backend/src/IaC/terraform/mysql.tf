@@ -7,34 +7,22 @@
 #   - Single-AZ (multi_az = false)
 #   - Instance class: db.t3.micro
 #   - 20 GB gp2 storage
-#   - Publicly accessible by default (for ease of dev); restrict via mysql_allowed_cidrs
+#   - Private subnets only (not publicly accessible)
 # - Creation is gated by var.enable_rds to avoid breaking existing flows.
 
-# Discover default VPC and its subnets for the DB subnet group
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default_vpc" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-# Security group for MySQL
+# Security group for MySQL (allow from Lambda SG only)
 resource "aws_security_group" "mysql_sg" {
   count       = var.enable_rds ? 1 : 0
   name        = "${var.environment}-mysql-sg"
   description = "Security group for MySQL RDS instance"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = aws_vpc.recipe[0].id
 
   ingress {
-    description = "MySQL ingress"
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = var.mysql_allowed_cidrs
+    description     = "MySQL from Lambdas"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lambda_sg[0].id]
   }
 
   egress {
@@ -51,12 +39,12 @@ resource "aws_security_group" "mysql_sg" {
   }
 }
 
-# DB subnet group across default VPC subnets
+# DB subnet group across private subnets in our VPC (min 2 AZs required by RDS)
 resource "aws_db_subnet_group" "mysql" {
   count       = var.enable_rds ? 1 : 0
   name        = "${var.environment}-mysql-subnets"
   description = "Subnet group for MySQL RDS"
-  subnet_ids  = data.aws_subnets.default_vpc.ids
+  subnet_ids  = [aws_subnet.private_a[0].id, aws_subnet.private_b[0].id]
 
   tags = {
     Environment = var.environment

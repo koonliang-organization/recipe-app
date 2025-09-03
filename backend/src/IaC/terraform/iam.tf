@@ -21,6 +21,12 @@ resource "aws_iam_role_policy_attachment" "user_lambda_basic_execution" {
   role       = aws_iam_role.user_lambda_role.name
 }
 
+# Needed for Lambda ENI management when attached to a VPC
+resource "aws_iam_role_policy_attachment" "user_lambda_vpc_access" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+  role       = aws_iam_role.user_lambda_role.name
+}
+
 # Recipe Lambda IAM Role
 resource "aws_iam_role" "recipe_lambda_role" {
   name = "${var.environment}-recipe-lambda-role"
@@ -41,6 +47,11 @@ resource "aws_iam_role" "recipe_lambda_role" {
 
 resource "aws_iam_role_policy_attachment" "recipe_lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  role       = aws_iam_role.recipe_lambda_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "recipe_lambda_vpc_access" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
   role       = aws_iam_role.recipe_lambda_role.name
 }
 
