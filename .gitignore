@@ -163,6 +163,10 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
+# Local/ephemeral backend files for remote state
+backend/src/IaC/terraform/backend.hcl
+backend/src/IaC/terraform/backend.remote.tf
+
 # Ignore override files as they are usually used to override resources locally
 override.tf
 override.tf.json
