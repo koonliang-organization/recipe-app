@@ -53,6 +53,7 @@ reportgenerator \
   -reports:"backend/TestResults/**/coverage.cobertura.xml" \
   -targetdir:"backend/TestResults/CoverageReport" \
   -reporttypes:"Html;TextSummary" \
+  -classfilters:"+*;-*.Migrations.*;-Program" \
   -assemblyfilters:"+Core.Domain;+Core.Application" \
   -historydir:"backend/TestResults/CoverageReport/History"
 
@@ -69,6 +70,7 @@ reportgenerator \
   -reports:"backend/TestResults/**/coverage.cobertura.xml" \
   -targetdir:"backend/TestResults/CoverageReportAll" \
   -reporttypes:"Html;TextSummary" \
+  -classfilters:"+*;-*.Migrations.*;-Program" \
   -assemblyfilters:"+Core.Domain;+Core.Application;+Infrastructure.Persistence;+Recipe;+User" \
   -historydir:"backend/TestResults/CoverageReportAll/History"
 

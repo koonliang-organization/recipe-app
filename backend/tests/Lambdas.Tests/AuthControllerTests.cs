@@ -60,6 +60,17 @@ public class AuthControllerTests
     }
 
     [Fact]
+    public async Task Login_ReturnsOk_OnSuccess()
+    {
+        var mediator = new Mock<IMediator>();
+        mediator.Setup(m => m.Send(It.IsAny<LoginCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildingBlocks.Common.Result.Success(new AuthenticationResult { Token = "t", User = new UserDto() }));
+        var ctrl = NewController(mediator);
+        var res = await ctrl.Login(new("a@b.com","pw"));
+        res.Should().BeOfType<OkObjectResult>();
+    }
+
+    [Fact]
     public async Task ForgotPassword_AlwaysOk_OnSuccessPath()
     {
         var mediator = new Mock<IMediator>();
@@ -82,6 +93,28 @@ public class AuthControllerTests
     }
 
     [Fact]
+    public async Task ForgotPassword_ReturnsBadRequest_OnFailure()
+    {
+        var mediator = new Mock<IMediator>();
+        mediator.Setup(m => m.Send(It.IsAny<ForgotPasswordCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildingBlocks.Common.Result.Failure("invalid"));
+        var ctrl = NewController(mediator);
+        var res = await ctrl.ForgotPassword(new("a@b.com"));
+        res.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task ResetPassword_ReturnsBadRequest_OnFailure()
+    {
+        var mediator = new Mock<IMediator>();
+        mediator.Setup(m => m.Send(It.IsAny<ResetPasswordCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildingBlocks.Common.Result.Failure("invalid"));
+        var ctrl = NewController(mediator);
+        var res = await ctrl.ResetPassword(new("tok","pw"));
+        res.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
     public async Task GetProfile_ReturnsUnauthorized_WithoutUser()
     {
         var ctrl = NewController(new Mock<IMediator>());
@@ -101,4 +134,3 @@ public class AuthControllerTests
         res.Should().NotBeNull();
     }
 }
-

@@ -90,6 +90,59 @@ public class RecipesControllerTests
     }
 
     [Fact]
+    public async Task UpdateRecipe_BadModelState_ReturnsBadRequest()
+    {
+        var mediator = new Mock<IMediator>();
+        var ctrl = NewController(mediator);
+        ctrl.ModelState.AddModelError("Title", "Required");
+        var res = await ctrl.UpdateRecipe(Guid.NewGuid(), new UpdateRecipeRequest("","d","c",null,new(),new()));
+        res.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task GetRecipeById_NotFound_Returns404()
+    {
+        var mediator = new Mock<IMediator>();
+        mediator.Setup(m => m.Send(It.IsAny<GetRecipeByIdQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildingBlocks.Common.Result.Failure<RecipeDto>("Recipe not found"));
+        var ctrl = NewController(mediator);
+        var res = await ctrl.GetRecipeById(Guid.NewGuid());
+        res.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public async Task CreateRecipe_Failure_ReturnsBadRequest()
+    {
+        var mediator = new Mock<IMediator>();
+        mediator.Setup(m => m.Send(It.IsAny<CreateRecipeCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildingBlocks.Common.Result.Failure<RecipeDto>("Title is required"));
+        var ctrl = NewController(mediator);
+        var req = new CreateRecipeRequest("", "D", "C", null,
+            new List<CreateIngredientDto> { new() { Name = "i", Quantity = "1", Unit = "u" } },
+            new List<CreateStepDto> { new() { StepNumber = 1, InstructionText = "s" } });
+        var res = await ctrl.CreateRecipe(req);
+        res.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task DeleteRecipe_MapsErrors_ToStatusCodes()
+    {
+        var mediator = new Mock<IMediator>();
+        var ctrl = NewController(mediator);
+
+        mediator.Setup(m => m.Send(It.IsAny<DeleteRecipeCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildingBlocks.Common.Result.Failure("Recipe not found"));
+        var res404 = await ctrl.DeleteRecipe(Guid.NewGuid());
+        res404.Should().BeOfType<NotFoundObjectResult>();
+
+        mediator.Reset();
+        mediator.Setup(m => m.Send(It.IsAny<DeleteRecipeCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(BuildingBlocks.Common.Result.Failure("Access denied"));
+        var res403 = await ctrl.DeleteRecipe(Guid.NewGuid());
+        res403.Should().BeOfType<ObjectResult>().Which.StatusCode.Should().Be(403);
+    }
+
+    [Fact]
     public async Task FavoriteEndpoints_ReturnOk_OnSuccess()
     {
         var mediator = new Mock<IMediator>();
