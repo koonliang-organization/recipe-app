@@ -2,7 +2,6 @@ using Amazon.Lambda.AspNetCoreServer;
 using BuildingBlocks.Observability;
 using Infrastructure.Persistence;
 using Core.Application.Configuration;
-using Core.Application.Interfaces;
 using DotNetEnv;
 
 // Load .env file for local development
@@ -76,12 +75,7 @@ using (var scope = app.Services.CreateScope())
     try 
     {
         var context = scope.ServiceProvider.GetRequiredService<RecipeAppDbContext>();
-        var seedDataService = scope.ServiceProvider.GetRequiredService<ISeedDataService>();
-        
         context.Database.EnsureCreated();
-        
-        // Run seeding if configured
-        await seedDataService.SeedAsync();
     }
     catch (Exception ex) when (ex.Message.Contains("Unable to connect") || ex.Message.Contains("MySQL"))
     {
